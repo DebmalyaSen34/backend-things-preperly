@@ -22,7 +22,7 @@ export const userSchema = new mongoose.Schema({
     lastName: {type: String},
     mobile: {type: Number},
     address: {type: String},
-    profile: {type: String},
+    roles: {type: String},
 });
 
 export default  mongoose.model.Users || mongoose.model('User', userSchema);
