@@ -1,6 +1,6 @@
 import { Router } from "express";
 const router = Router();
-
+import Auth, { localVariables } from "../middleware/auth.js";
 import * as controller from "../controllers/appControllers.js";
 
 //* POST METHODS
@@ -15,15 +15,15 @@ router.route("/login").post(controller.verifyUser, controller.login);
 
 router.route("/user/:username").get(controller.getuser);
 
-router.route("/user/generateOTP").get(controller.generateOTP);
+router.route("/generateOTP").get(controller.verifyUser, localVariables, controller.generateOTP);
 
-router.route("/user/verifyOTP").get(controller.verifyOTP);
+router.route("/verifyOTP").get(controller.verifyOTP);
 
-router.route("/user/createResetSession").get(controller.createResetSession);
+router.route("/createResetSession").get(controller.createResetSession);
 
 //* PUT METHODS
 
-router.route("/updateUser").put(controller.updateUser);
+router.route("/updateUser").put(Auth, controller.updateUser);
 
 router.route("/resetPassword/:username").put(controller.resetPassword);
 

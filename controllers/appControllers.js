@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { configDotenv } from "dotenv";
 import mongoose from "mongoose";
+import otpGenerator from 'otp-generator';
 
 export async function verifyUser(req, res, next) {
   try {
@@ -131,21 +132,23 @@ export async function getuser(req, res) {
 
 export async function updateUser(req, res) {
   try {
-    const id = req.query.id;
+    // const id = req.query.id;
 
-    if (id) {
+    const { userId } = req.user;
+
+    if (userId) {
       const body = req.body;
 
-      if (!mongoose.Types.ObjectId.isValid(id)) {
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
         return res.status(400).send({ error: "Invalid User ID format!" });
       }
 
-      const user = userModel.findOne({ _id: id });
+      const user = userModel.findOne({ _id: userId });
       if (!user) {
         return res.status(404).send({ message: "User not found!" });
       }
 
-      const result = await userModel.updateOne({ _id: id }, body);
+      const result = await userModel.updateOne({ _id: userId }, body);
 
       if (result.nModified === 0) {
         return res
@@ -163,11 +166,18 @@ export async function updateUser(req, res) {
 }
 
 export async function generateOTP(req, res) {
-  res.json({ message: "generate OTP" }); // Simulating successful registration
+  req.app.locals.OTP = await otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
+  res.status(201).send({ code: req.app.locals.OTP });
 }
 
 export async function verifyOTP(req, res) {
-  res.json({ message: "Verify OTP" }); // Simulating successful registration
+  const { code } = req.query;
+  if (parseInt(req.app.locals.OTP) === parseInt(code)) {
+    req.app.locals.OTP = null; // reset the OTP value
+    req.app.locals.resetSession = true; // Start session for reset Password
+    return res.status(201).send({ msg: 'Verified Successfully!' });
+  }
+  return res.status(400).send({ error: 'Invalid OTP' });
 }
 
 export async function createResetSession(req, res) {
