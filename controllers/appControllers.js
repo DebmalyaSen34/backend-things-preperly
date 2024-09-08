@@ -4,12 +4,14 @@ import jwt from "jsonwebtoken";
 import { configDotenv } from "dotenv";
 import mongoose from "mongoose";
 import otpGenerator from 'otp-generator';
+import { OtpModel } from "../model/otpModel.model.js";
+import { error } from "console";
 
 export async function verifyUser(req, res, next) {
   try {
     const { username } = req.method == "GET" ? req.query : req.body;
 
-    let exist = await userModel.findOne({ username });
+    let exist = await userModel.findOne({ username: username });
     if (!exist) return res.status(404).send({ message: "cannot find user" });
     next();
   } catch (error) {
@@ -24,7 +26,7 @@ export async function register(req, res) {
       email,
       firstName,
       lastName,
-      mobileNumber,
+      mobile,
       address,
       roles,
     } = req.body;
@@ -47,7 +49,7 @@ export async function register(req, res) {
       email,
       firstName,
       lastName,
-      mobileNumber,
+      mobile,
       address,
       roles,
     });
@@ -166,24 +168,84 @@ export async function updateUser(req, res) {
 }
 
 export async function generateOTP(req, res) {
-  req.app.locals.OTP = await otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
-  res.status(201).send({ code: req.app.locals.OTP });
+  try {
+    const { email } = req.body;
+
+    const existingOtp = await OtpModel.findOne({ email: email });
+
+    if(existingOtp){
+      const currentTime = new Date();
+      const otpCreationTime = new Date(existingOtp.createdAt);
+      const diffTime = Math.abs(currentTime - otpCreationTime) / 1000;
+
+      if(diffTime < 5*60){
+        return res.status(400).send({ message: 'OTP generation request within 5 minutes is not allowed!', time: diffTime});
+      }
+    }
+
+    const OTP = otpGenerator.generate(6, { upperCase: false, specialChars: false });
+
+    const otpUser = await OtpModel.findOne({ email: email });
+    if (otpUser) {
+      await OtpModel.findOneAndUpdate({ email: email }, { otp: OTP }, { upsert: true, new: true });
+    } else {
+      await OtpModel.create({ email: email, otp: OTP }); //* email is being sent to the user from the model here
+    }
+    res.status(201).send({ code: OTP });
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
 }
 
 export async function verifyOTP(req, res) {
-  const { code } = req.query;
-  if (parseInt(req.app.locals.OTP) === parseInt(code)) {
-    req.app.locals.OTP = null; // reset the OTP value
-    req.app.locals.resetSession = true; // Start session for reset Password
-    return res.status(201).send({ msg: 'Verified Successfully!' });
+  try {
+    const { email, otp } = req.body;
+    const otpRecord = await OtpModel.findOne({ email: email });
+    if (!otpRecord || otpRecord.otp !== otp) {
+      return res.status(404).send({ message: 'OTP not found!' });
+    }
+
+    req.session.user = { email: email };
+
+    res.status(200).send({ message: 'OTP verified successfully!', success: true });
+  } catch (error) {
+    return res.status(500).send({ error: error.message });
   }
-  return res.status(400).send({ error: 'Invalid OTP' });
+}
+
+export async function logout(req, res) {
+  req.session.destroy((error) => {
+    if (error) {
+      console.error('Error destroying session:', error);
+    }
+    res.clearCookie('connect.sid');
+    res.status(200).send({ message: 'User logged out successfully!' });
+  });
 }
 
 export async function createResetSession(req, res) {
-  res.json({ message: "create reset session route" }); // Simulating successful registration
+  if (req.app.locals.resetSession) {
+    req.app.locals.resetSession = false; // allow this route only once
+    return res.status(201).send({ msg: 'Reset Session Created!' });
+  }
+  return res.status(400).send({ error: 'Session expired!' });
 }
 
 export async function resetPassword(req, res) {
-  res.json({ message: "reset password route" }); // Simulating successful registration
+  try {
+    if (!req.app.locals.resetSession) {
+      return res.status(440).send({ error: 'Invalid or expired reset session!' });  // Check if resetSession is not null or expired. If not, return error.  // ResetSession is created when OTP is verified and session is allowed.  // req.app.locals is a global object that persists across requests.  // req.app.locals.resetSession is set to true in the verifyOTP route.  // req.app.locals.resetSession is reset to false in the resetPassword route.  // This is done to ensure that the password reset route is called only once.  // This is done to prevent resetting the password multiple times if the user tries to reset it again while the previous reset session is still valid.  // If the resetSession is not valid, the user will receive an error message saying 'Invalid or expired reset session!'.  // If the resetSession is valid, the user will be able to
+    }
+    const { username, password } = req.body;
+    const user = await userModel.findOne({ username });
+    if (!user) {
+      return res.status(404).send({ error: 'User not found!' });
+    } else {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await userModel.updateOne({ username }, { password: hashedPassword });
+      return res.status(201).send({ msg: 'Password Reset Successfully!' });
+    }
+  } catch (error) {
+    return res.status(401).send({ error: error.message });
+  }
 }
