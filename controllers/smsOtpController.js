@@ -1,8 +1,11 @@
 import axios from 'axios';
+import { configDotenv } from 'dotenv';
 
-const apiKey = 'creucccao9hdbteumm6g';
-const apiSecret = '41e0jcvay18p3x96831mp20i';
-const url = 'https://otp.api.engagelab.cc/v1/messages';
+configDotenv();
+
+const apiKey = process.env.API_KEY;
+const apiSecret = process.env.API_SECRET;
+const url = process.env.API_URL;
 const headers = { 'Content-Type': 'application/json' };
 
 export async function sendOtp(req, res) {

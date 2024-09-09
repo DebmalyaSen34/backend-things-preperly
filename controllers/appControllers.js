@@ -5,7 +5,7 @@ import { configDotenv } from "dotenv";
 import mongoose from "mongoose";
 import otpGenerator from 'otp-generator';
 import { OtpModel } from "../model/otpModel.model.js";
-import { error } from "console";
+import axios from "axios";
 
 export async function verifyUser(req, res, next) {
   try {
@@ -166,6 +166,8 @@ export async function updateUser(req, res) {
     return res.status(401).send({ error: error.message });
   }
 }
+
+
 
 export async function generateOTP(req, res) {
   try {

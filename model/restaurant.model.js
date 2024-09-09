@@ -5,6 +5,15 @@ export const restaurantSchema = new mongoose.Schema({
         type: String,
         required: [true, "Restaurant name is required"]
     },
+    password: {
+        type: String,
+        required: true
+    },
+    email: {
+        type: String,
+        unique: true,
+        required: [true, "You must register with an email"]
+    },
     cuisineType: {
         type: Array,
         required: [true, "Cuisine type is required"]
@@ -19,15 +28,12 @@ export const restaurantSchema = new mongoose.Schema({
     },
     city: {
         type: String,
-        required: [true, "City is required"]
     },
     state: {
         type: String,
-        required: [true, "State is required"]
     },
     zipcode: {
         type: String,
-        required: [true, "Zipcode is required"]
     },
     rating: {
         type: Number,
