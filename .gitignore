@@ -40,3 +40,8 @@ build/
 # Temporary files
 tmp/
 temp/
+.env*
+.flaskenv*
+!.env.project
+!.env.vault
+!.env.me
