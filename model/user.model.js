@@ -20,7 +20,7 @@ export const userSchema = new mongoose.Schema({
 
     firstName: {type: String},
     lastName: {type: String},
-    mobile: {type: String},
+    mobile: {type: Number},
     address: {type: String},
     roles: {type: String},
 });

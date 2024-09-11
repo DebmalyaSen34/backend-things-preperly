@@ -10,6 +10,11 @@ const orderSchema = new mongoose.Schema({
         type: Date,
         default: Date.now()
     },
+    restaurantId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Restaurant',
+        required: true
+    },
     items: [{
         productId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -31,3 +36,5 @@ const orderSchema = new mongoose.Schema({
 });
 
 const order = mongoose.model('Order', orderSchema);
+
+export default order;

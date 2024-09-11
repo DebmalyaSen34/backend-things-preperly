@@ -35,7 +35,7 @@ export function localVariables(req, res, next) {
 }
 
 export function isAuthenticated(req, res, next) {
-    if (req.session.user) {
+    if (req.session.userId) {
         return next();
     } else {
         return res.status(401).json({ error: 'Unauthorized access!' });

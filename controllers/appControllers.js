@@ -81,22 +81,12 @@ export async function login(req, res) {
       return res.status(400).send({ message: "Wrong password!" });
     }
 
-    configDotenv();
-
-    const token = jwt.sign(
-      {
-        userId: user._id,
-        username: user.username,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "24h" }
-    );
-    console.log("User successfully logged in");
+    req.session.userId = user._id;
+    req.session.username = user.username;
 
     res.status(200).send({
-      message: "User successfully found!",
-      username: user.username,
-      token,
+      message: "User successfully logged int!",
+      username: user.username
     });
   } catch (error) {
     console.error("Error during login:", error);
@@ -181,7 +171,7 @@ export async function generateOTP(req, res) {
       const diffTime = Math.abs(currentTime - otpCreationTime) / 1000;
 
       if(diffTime < 5*60){
-        return res.status(400).send({ message: 'OTP generation request within 5 minutes is not allowed!', time: diffTime});
+        return res.status(400).send({ message: 'OTP generation request f 5 minutes is not allowed!', time: diffTime});
       }
     }
 
