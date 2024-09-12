@@ -1,9 +1,7 @@
 import Restaurant from "../model/restaurant.model.js";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { configDotenv } from "dotenv";
 import mongoose from "mongoose";
-import otpGenerator from 'otp-generator';
+import order from "../model/order.model.js";
 
 export async function verifyRestaurant(req, res, next){
     try {
@@ -152,3 +150,20 @@ export async function searchRestaurants(req, res) {
 //         }
 //     }
 // }
+
+export async function getOrders(req, res) {
+    const restaurantId = req.session.restaurantId;
+    console.log(restaurantId);
+
+    if(!restaurantId){
+        return res.status(404).send({message: "You are not logged in!"});
+    }
+
+    try{
+        const orders = await order.find({restaurantId: restaurantId});
+        res.status(200).send(orders);
+    }catch(error){
+        console.error(error);
+        res.status(500).send({message: "Internal server error!"});
+    }
+}

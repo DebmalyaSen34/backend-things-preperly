@@ -5,6 +5,8 @@ const vendorRouter = Router();
 import * as controller from '../controllers/vendorController.js';
 import * as productController from '../controllers/productController.js';
 
+import { Auth } from "../middleware/restaurantAuth.js";
+
 //* POST METHODS
 
 vendorRouter.post('/register', controller.createRestaurant);
@@ -25,7 +27,9 @@ vendorRouter.get('/restaurant/generateOTP', controller.sendOTP);
 
 vendorRouter.get('/restaurant/verifyOTP', controller.verifyOTP);
 
-vendorRouter.get('/logout', controller.verifyRestaurant, controller.logoutRestaurant);
+vendorRouter.get('/logout', Auth, controller.logoutRestaurant);
+
+vendorRouter.get('/getOrders', Auth, controller.getOrders);
 
 //* PUT METHODS
 
