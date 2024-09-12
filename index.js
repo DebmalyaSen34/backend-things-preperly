@@ -3,15 +3,19 @@ import express from "express";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import { configDotenv } from "dotenv";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 
 //* Defined files
 import router from "./router/router.js";
 import vendorRouter from "./router/vendor.js";
 import connectToDatabase from "./database/config.js";
+import { Auth } from "./middleware/auth.js";
 
 //* Middlewares
 const app = express();
+
+app.use(cookieParser());
 
 //* PORT configuration
 const PORT = process.env.PORT || 3000;
@@ -33,7 +37,7 @@ connectToDatabase().then(() => {
 
 //* Configure session middleware
 app.use(session({
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.JWT_SECRET,
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
@@ -53,6 +57,9 @@ app.use(session({
 //* Middleware for parsing JSON request bodies
 
 app.use(express.json());
+
+app.use(Auth);
+
 
 app.get('/', (req, res) => {
     res.status(201).json("Welcome to the API!");

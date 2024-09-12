@@ -1,6 +1,6 @@
 import { Router } from "express";
 const router = Router();
-import Auth, { isAuthenticated } from "../middleware/auth.js"; //* required for authenticating sessions
+import { Auth, isAuthenticated } from "../middleware/auth.js"; //* required for authenticating sessions
 import { sendOtp } from "../controllers/smsOtpController.js";
 import * as controller from "../controllers/appControllers.js"; //* main controller of the user
 import * as orderController from "../controllers/order.js"; //* controller to handle order request by the user
@@ -9,16 +9,17 @@ import * as orderController from "../controllers/order.js"; //* controller to ha
 
 router.route("/register").post(controller.register);
 
-
 router.route("/login").post(controller.verifyUser, controller.login);
 
 router.route("/verifyOTP").post(controller.verifyOTP);
 
-router.route("/logout").post(isAuthenticated, controller.logout);
+router.route("/logout").post(Auth, controller.logout);
 
-router.route("/orderItems").post(isAuthenticated, orderController.orderItems);
+router.route("/orderItems").post(Auth, orderController.orderItems);
 
 //* GET METHODS
+
+router.route("/debIsgreat").get(Auth, controller.testFunction);
 
 router.route("/protected").get(isAuthenticated, (req, res) => res.send('This is a protected route'));
 

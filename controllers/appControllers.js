@@ -81,11 +81,19 @@ export async function login(req, res) {
       return res.status(400).send({ message: "Wrong password!" });
     }
 
-    req.session.userId = user._id;
-    req.session.username = user.username;
+    configDotenv();
+
+    const token = jwt.sign({userId: user._id, username: user.username}, process.env.JWT_SECRET, { expiresIn: '30d'});
+
+    console.log("token: ", token);
+
+    res.cookie('authToken', token);
+
+    // req.session.userId = user._id;
+    // req.session.username = user.username;
 
     res.status(200).send({
-      message: "User successfully logged int!",
+      message: "User successfully logged in!",
       username: user.username
     });
   } catch (error) {
@@ -209,8 +217,10 @@ export async function logout(req, res) {
   req.session.destroy((error) => {
     if (error) {
       console.error('Error destroying session:', error);
+      return res.status(500).send({ message: "Error loggin you out!" });
     }
     res.clearCookie('connect.sid');
+    res.clearCookie('authToken');
     res.status(200).send({ message: 'User logged out successfully!' });
   });
 }
@@ -239,5 +249,25 @@ export async function resetPassword(req, res) {
     }
   } catch (error) {
     return res.status(401).send({ error: error.message });
+  }
+}
+
+
+
+
+
+
+
+
+
+
+//* This is a testing function to make sure cookies are working fine
+
+export async function testFunction(req, res){
+  const token = req.cookies.authToken;
+  if(!token){
+    return res.status(401).send({ message: "No token found!" });
+  }else{
+    return res.status(200).send({ message: "Token found!" });
   }
 }

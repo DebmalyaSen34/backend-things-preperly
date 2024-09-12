@@ -3,26 +3,24 @@ import { configDotenv } from 'dotenv';
 
 configDotenv();
 
-export default async function Auth(req, res, next) {
-    try {
-        const authHeader = req.headers.authorization;
+export function Auth(req, res, next) {
+    const token = req.cookies.authToken;
 
-        if (!authHeader) {
-            return res.status(401).json({ error: 'No token provided!' });
+    if(!token){
+        console.log("No auth token"); //! Being logged in 2 times
+        return next();
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if(err){
+            return res.status(403).send({message: "Invalid token"});
         }
 
-        const token = authHeader.split(" ")[1];
-
-        // retrive the use details for the logged in user
-
-        const decodedToken = await jwt.verify(token, process.env.JWT_SECRET);
-
-        req.user = decodedToken;
-
+        req.session.userId = user.userId;
+        req.session.username = user.username;
+        console.log(req.session.userId, req.session.username);
         next();
-    } catch (error) {
-        res.status(401).json({ error: "Authentication Failed!" });
-    }
+    });
 }
 
 export function localVariables(req, res, next) {
@@ -41,3 +39,5 @@ export function isAuthenticated(req, res, next) {
         return res.status(401).json({ error: 'Unauthorized access!' });
     }
 }
+
+
