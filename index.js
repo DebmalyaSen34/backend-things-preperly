@@ -4,17 +4,15 @@ import session from "express-session";
 import MongoStore from "connect-mongo";
 import { configDotenv } from "dotenv";
 import cookieParser from "cookie-parser";
-import cors from "cors";
 
 //* Defined files
 import router from "./router/router.js";
-import vendorRouter from "./router/vendor.js";
-import connectToDatabase from "./database/config.js";
+import vendorRouter from "./router/vendor.js"; // vendor routes
+import connectToDatabase from "./database/config.js"; // client routes
 import { Auth } from "./middleware/auth.js";
 
 //* Middlewares
 const app = express();
-
 app.use(cookieParser());
 
 //* PORT configuration
@@ -47,7 +45,7 @@ app.use(session({
         autoRemove: 'native'
     }),
     cookie: {
-        maxAge: 1000 * 60 * 60 * 24 * 14, // 1 Day
+        maxAge: 1000 * 60 * 60 * 24 * 14, //todo: make this for 1 month
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict'
@@ -55,17 +53,18 @@ app.use(session({
 }));
 
 //* Middleware for parsing JSON request bodies
-
 app.use(express.json());
 
+//* Middleware for Authenticating cookies
 app.use(Auth);
 
 
+//* Main route
 app.get('/', (req, res) => {
     res.status(201).json("Welcome to the API!");
 });
 
-//* API routes
+//* ---------------------- API routes ------------------------- *//
 
 // for client usage
 app.use('/api', router);

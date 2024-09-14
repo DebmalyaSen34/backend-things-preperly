@@ -5,7 +5,6 @@ import { configDotenv } from "dotenv";
 import mongoose from "mongoose";
 import otpGenerator from 'otp-generator';
 import { OtpModel } from "../model/otpModel.model.js";
-import axios from "axios";
 
 export async function verifyUser(req, res, next) {
   try {
@@ -121,14 +120,6 @@ export async function getuser(req, res) {
     return res.status(404).send({ error: "Couldn't Find user data!" });
   }
 }
-
-/* 
-    body: {
-        firstName": "Deb",
-        address": "221-B Baker St, Anytown, USA",
-        roles": ["user"]
-    }
-*/
 
 export async function updateUser(req, res) {
   try {
