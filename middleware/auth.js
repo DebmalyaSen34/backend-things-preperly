@@ -5,7 +5,7 @@ configDotenv();
 
 export function Auth(req, res, next) {
     const token = req.cookies.authToken;
-
+    console.log(token)
     if(!token){
         console.log("No auth token"); //! Being logged in 2 times
         return next();
@@ -21,15 +21,6 @@ export function Auth(req, res, next) {
         console.log(req.session.userId, req.session.username);
         next();
     });
-}
-
-export function localVariables(req, res, next) {
-    // access local variables using locals
-    req.app.locals = {
-        OTP: null,
-        resetSession: false
-    }
-    next();
 }
 
 export function isAuthenticated(req, res, next) {

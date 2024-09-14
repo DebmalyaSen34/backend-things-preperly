@@ -13,12 +13,12 @@ router.route("/login").post(controller.verifyUser, controller.login);
 
 router.route("/verifyOTP").post(controller.verifyOTP);
 
-router.route("/logout").post(Auth, controller.logout);
 
 router.route("/orderItems").post(Auth, orderController.orderItems);
 
 //* GET METHODS
 
+router.route("/logout").get(Auth, controller.logout);
 router.route("/debIsgreat").get(Auth, controller.testFunction);
 
 router.route("/protected").get(isAuthenticated, (req, res) => res.send('This is a protected route'));
@@ -30,6 +30,8 @@ router.route("/generateOTP").get(controller.verifyUser, controller.generateOTP);
 router.route("/createResetSession").get(controller.createResetSession);
 
 router.route("/sendOTP").get(controller.verifyUser, sendOtp);
+
+router.route("/isLoggedIn").get(Auth, controller.isLoggedIn);
 
 //* PUT METHODS
 

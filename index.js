@@ -55,9 +55,17 @@ app.use(session({
 }));
 
 //* Middleware for parsing JSON request bodies
-
 app.use(express.json());
 
+//* Middleware of cors
+app.use(cors({
+    origin: [process.env.CLIENT_URL, 'https://f3c5hgzp-5173.inc1.devtunnels.ms'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
+}));
+
+//* Middleware for Authenticating if user has already logged in
 app.use(Auth);
 
 

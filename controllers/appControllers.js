@@ -30,8 +30,9 @@ export async function register(req, res) {
       address,
       roles,
     } = req.body;
-
+    
     const existUsername = await userModel.findOne({ username });
+    console.log(existUsername);
     if (existUsername) {
       return res.status(400).send({ message: "Username already exists" });
     }
@@ -88,9 +89,6 @@ export async function login(req, res) {
     console.log("token: ", token);
 
     res.cookie('authToken', token);
-
-    // req.session.userId = user._id;
-    // req.session.username = user.username;
 
     res.status(200).send({
       message: "User successfully logged in!",
@@ -252,7 +250,23 @@ export async function resetPassword(req, res) {
   }
 }
 
-
+export async function isLoggedIn(req, res){
+  const token = req.cookies.authToken;
+  if(!token){
+    return res.status(401).send({ message: "No token found!" });
+  }else{
+    try{
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      return res.status(200).send({
+        message: "User is logged in!",
+        userId: decoded.userId,
+        username: decoded.username
+      });
+    }catch(error){
+      return res.status(401).send({ message: "Invalid token!" });
+    }
+  }
+}
 
 
 
